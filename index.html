@@ -35,10 +35,6 @@
       const lng  = pos.coords.longitude;
       const addr = await getAddress(lat, lng);
 
-      // 1⃣  Open the Google Form (prefilled with roll no)
-      const formURL = formBaseURL.replace("ROLLNO", encodeURIComponent(roll));
-      window.open(formURL, "_blank");
-
       // 2⃣  Send GPS data to Apps Script
       fetch(`${scriptURL}?rollno=${roll}&lat=${lat}&lng=${lng}&addr=${encodeURIComponent(addr)}`)
         .then(r => r.text()).then(console.log).catch(console.error);
