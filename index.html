@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>QR Attendance</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 2rem; }
+  #box { max-width: 320px; margin: auto; border: 1px solid #ddd; padding: 1.5rem; border-radius: 8px; }
+  button { padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer; }
+</style>
+<script>
+  // 🔄 1.  Google Form pre‑fill URL – leave ROLLNO exactly as shown
+  const formBaseURL =
+    "https://docs.google.com/forms/d/e/1FAIpQLSdwKRj-t2PTJDlVlPR0M3dFjAtFwpdcb3kswKn8OqGh3fotCg/viewform?usp=pp_url&entry.846968130=ROLLNO";
+
+  // 🔄 2.   Apps Script Web‑app URL
+  const scriptURL   = "https://script.google.com/macros/s/AKfycbxxDBa7DPmrVvCp8e0duiJ5_r-MKQe1b4g7pUDVMn0T8Wqqog7mppXWIqruOPjFQdAnnw/exec";
+
+  // —— Reverse‑geocode via OpenStreetMap —— (free, no API key)
+  async function getAddress(lat, lng) {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+    );
+    const json = await res.json().catch(() => ({}));
+    return json.display_name || "Unknown";
+  }
+
+  async function submitAttendance() {
+    const roll = document.getElementById("roll").value.trim();
+    if (!roll) { alert("Enter Roll No"); return; }
+
+    // Get current position
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const lat  = pos.coords.latitude;
+      const lng  = pos.coords.longitude;
+      const addr = await getAddress(lat, lng);
+
+      // 1⃣  Open the Google Form (prefilled with roll no)
+      const formURL = formBaseURL.replace("ROLLNO", encodeURIComponent(roll));
+      window.open(formURL, "_blank");
+
+      // 2⃣  Send GPS data to Apps Script
+      fetch(`${scriptURL}?rollno=${roll}&lat=${lat}&lng=${lng}&addr=${encodeURIComponent(addr)}`)
+        .then(r => r.text()).then(console.log).catch(console.error);
+
+      // Optional UX feedback
+      document.getElementById("status").textContent = "Attendance sent ✔";
+    }, err => {
+      alert("Unable to access location. Please allow GPS and try again.");
+      console.error(err);
+    });
+  }
+</script>
+</head>
+<body>
+  <div id="box">
+    <h2>Attendance</h2>
+    <label for="roll">Roll&nbsp;No:</label><br>
+    <input id="roll" type="text" autocomplete="off" /><br><br>
+    <button onclick="submitAttendance()">Submit</button>
+    <p id="status" style="color:green;margin-top:1rem;"></p>
+  </div>
+</body>
+</html>
