@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecting...</title>
+  <script>
+    // Your actual Google Form pre-filled base URL
+    const formBaseURL = "https://docs.google.com/forms/d/e/1FAIpQLScvHvLIWN3vVFgtIRB2R-wTq2X8u_32kIf9khAOxMZWBOSjrQ/viewform?usp=pp_url";
+
+    // Location field entry ID — stays same
+    const locationKey = "entry.1473154096";
+
+    function redirectWithLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+
+          const locationValue = encodeURIComponent(`${lat}, ${lon}`);
+          const url = `${formBaseURL}&${locationKey}=${locationValue}`;
+          window.location.href = url;
+        }, () => {
+          alert("Location access denied.");
+        });
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    }
+
+    window.onload = redirectWithLocation;
+  </script>
+</head>
+<body>
+  <h2>Redirecting to Google Form...</h2>
+  <p>Please allow location access to continue.</p>
+</body>
+</html>
